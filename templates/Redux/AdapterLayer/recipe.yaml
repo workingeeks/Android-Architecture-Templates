@@ -1,0 +1,67 @@
+requiredParams:
+  name: Adapter Layer
+  description: List adapters for feature
+
+widgets:
+
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - stringParameter:
+      id: adapterName
+      name: Adapter delegate name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}AdapterDelegate
+
+  - stringParameter:
+      id: adapterLayoutName
+      name: Adapter layout name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: item_${featureName.camelCaseToUnderlines()}
+
+  - stringParameter:
+      id: listItemName
+      name: List item name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Item
+
+  - booleanParameter:
+      id: hasClickListener
+      name: Has click listener?
+      help: Has click listener?
+      default: false
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+recipe:
+  - instantiateAndOpen:
+      from: root/src/app_package/view/feature_package/ui/adapter/delegates/AdapterDelegate.kt.ftl
+      to: ${srcOut}/view/${feature_name}/ui/adapter/delegates/${adapterName}.kt
+
+  - instantiateAndOpen:
+      from: root/res/layout/adapter_layout.xml.ftl
+      to: ${resOut}/layout/${adapterLayoutName}.xml

@@ -1,0 +1,133 @@
+requiredParams:
+  name: Data Layer
+  description: Data layer for feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - stringParameter:
+      id: itemName
+      name: Item name (if not equal to feature name)
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: suggest
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Id type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - booleanParameter:
+      id: isSingleItemOperation
+      name: Only single item operations supported?
+      help: Only single item operations supported?
+      default: false
+
+  - booleanParameter:
+      id: isCreateRepository
+      name: Create repository?
+      help: Create repository?
+      default: true
+
+  - stringParameter:
+      id: repositoryName
+      name: Repository interface name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Repository
+      visibility: ${isCreateRepository}
+
+  - booleanParameter:
+      id: isCreateRemoteDataSource
+      name: Create remote data source interface?
+      help: Create remote data source interface?
+      default: true
+
+  - stringParameter:
+      id: remoteDataSourceName
+      name: RemoteDataSource name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}RemoteDataSource
+      visibility: ${isCreateRemoteDataSource}
+
+  - booleanParameter:
+      id: isCreateCacheDataSource
+      name: Create cache data source interface?
+      help: Create cache data source interface?
+      default: true
+
+  - stringParameter:
+      id: cacheDataSourceName
+      name: CacheDataSource name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}CacheDataSource
+      visibility: ${isCreateCacheDataSource}
+
+  - booleanParameter:
+      id: isExposeSaveOperation
+      name: Expose save operation in repository?
+      help: Expose save operation in repository?
+      visibility: ${isCreateCacheDataSource}
+      default: false
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+recipe:
+  - predicate:
+      validIf: ${isCreateCacheDataSource}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/data/feature_package/source/CacheDataSource.kt.ftl
+            to: ${srcOut}/data/${feature_name}/source/${cacheDataSourceName}.kt
+
+  - predicate:
+      validIf: ${isCreateRemoteDataSource}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/data/feature_package/source/RemoteDataSource.kt.ftl
+            to: ${srcOut}/data/${feature_name}/source/${remoteDataSourceName}.kt
+
+  - predicate:
+      validIf: ${isCreateRepository}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/data/feature_package/repository/RepositoryImpl.kt.ftl
+            to: ${srcOut}/data/${feature_name}/repository/${repositoryName}Impl.kt

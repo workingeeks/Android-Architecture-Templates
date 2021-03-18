@@ -1,0 +1,171 @@
+requiredParams:
+  name: Remote Layer
+  description: Remote layer for feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - booleanParameter:
+      id: useRx
+      name: Rx
+      help: Use Rx's Single/Completable/other types instead of suspendable functions
+      default: false
+
+  - stringParameter:
+      id: itemName
+      name: Item name (if not equal to feature name)
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleFeature
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: default
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Id type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - booleanParameter:
+      id: isSingleItemOperation
+      name: Only single item operations supported?
+      help: Only single item operations supported?
+      default: false
+
+  - booleanParameter:
+      id: isCreateDataSource
+      name: Create remote data source impl?
+      help: Create remote data source impl?
+      default: true
+
+  - stringParameter:
+      id: dataSourceName
+      name: Remote data source interface name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleRemoteDataSource
+      suggest: ${featureName}RemoteDataSource
+      visibility: ${isCreateDataSource}
+
+  - booleanParameter:
+      id: isCreateService
+      name: Create service interface?
+      help: Create service interface?
+      default: true
+
+  - stringParameter:
+      id: serviceName
+      name: Service name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleService
+      suggest: ${featureName}Service
+      visibility: ${isCreateService}
+
+  - booleanParameter:
+      id: isCreateResponse
+      name: Create response?
+      help: Create response?
+      default: false
+
+  - stringParameter:
+      id: responseName
+      name: Response name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleFeatureResponse
+      suggest: ${itemName}Response
+      visibility: ${isCreateResponse}
+
+  - booleanParameter:
+      id: isCreateResponseMapper
+      name: Create response mapper?
+      help: Create response mapper?
+      visibility: ${isCreateResponse}
+      default: false
+
+  - stringParameter:
+      id: responseMapperName
+      name: Response mapper name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleFeatureResponseMapper
+      suggest: ${responseName}Mapper
+      visibility: ${isCreateResponseMapper}
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+recipe:
+  - predicate:
+      validIf: ${isCreateDataSource}
+      commands:
+        - predicate:
+            validIf: ${useRx}
+            commands:
+              - instantiateAndOpen:
+                  from: root/src/app_package/remote/feature_package/RxRemoteDataSourceImpl.kt.ftl
+                  to: ${srcOut}/remote/${feature_name}/${dataSourceName}Impl.kt
+            elseCommands:
+              - instantiateAndOpen:
+                  from: root/src/app_package/remote/feature_package/RemoteDataSourceImpl.kt.ftl
+                  to: ${srcOut}/remote/${feature_name}/${dataSourceName}Impl.kt
+
+  - predicate:
+      validIf: ${isCreateService}
+      commands:
+        - predicate:
+            validIf: ${useRx}
+            commands:
+              - instantiateAndOpen:
+                  from: root/src/app_package/remote/feature_package/service/RxService.kt.ftl
+                  to: ${srcOut}/remote/${feature_name}/service/${serviceName}.kt
+            elseCommands:
+              - instantiateAndOpen:
+                  from: root/src/app_package/remote/feature_package/service/Service.kt.ftl
+                  to: ${srcOut}/remote/${feature_name}/service/${serviceName}.kt
+
+  - predicate:
+      validIf: ${isCreateResponse}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/remote/feature_package/model/Response.kt.ftl
+            to: ${srcOut}/remote/${feature_name}/model/${responseName}.kt
+
+  - predicate:
+      validIf: ${isCreateResponseMapper}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/remote/feature_package/mapper/ResponseMapper.kt.ftl
+            to: ${srcOut}/remote/${feature_name}/mapper/${responseMapperName}.kt

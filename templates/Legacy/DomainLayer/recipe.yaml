@@ -1,0 +1,121 @@
+requiredParams:
+  name: Domain Layer
+  description: Domain layer for feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - stringParameter:
+      id: itemName
+      name: Item name (if not equal to feature name)
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: suggest
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Id type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - booleanParameter:
+      id: isCreateModel
+      name: Create model?
+      help: Create model?
+      default: true
+
+  - booleanParameter:
+      id: isSingleItemOperation
+      name: Only single item operations supported?
+      help: Only single item operations supported?
+      default: false
+
+  - booleanParameter:
+      id: isCreateRepository
+      name: Create repository?
+      help: Create repository?
+      default: true
+
+  - stringParameter:
+      id: repositoryName
+      name: Repository interface name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Repository
+      visibility: ${isCreateRepository}
+
+  - booleanParameter:
+      id: isCreateInteractor
+      name: Create interactor?
+      help: Create interactor?
+      default: true
+
+  - stringParameter:
+      id: interactorName
+      name: Interactor name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Interactor
+      visibility: ${isCreateInteractor}
+
+  - booleanParameter:
+      id: isExposeSaveOperation
+      name: Expose save operation in repository?
+      help: Expose save operation in repository?
+      default: false
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+recipe:
+  - predicate:
+      validIf: ${isCreateInteractor}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/domain/feature_package/interactor/Interactor.kt.ftl
+            to: ${srcOut}/domain/${feature_name}/interactor/${interactorName}.kt
+
+  - predicate:
+      validIf: ${isCreateRepository}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/domain/feature_package/repository/Repository.kt.ftl
+            to: ${srcOut}/domain/${feature_name}/repository/${repositoryName}.kt
+
+  - predicate:
+      validIf: ${isCreateModel}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/domain/feature_package/model/Model.kt.ftl
+            to: ${srcOut}/domain/${feature_name}/model/${itemName}.kt

@@ -1,0 +1,245 @@
+requiredParams:
+  name: View Layer
+  description: View layer for feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - stringParameter:
+      id: itemName
+      name: Item name (if not equal to feature name)
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleFeature
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: default
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Id type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - booleanParameter:
+      id: isMvp
+      name: Has mvp?
+      help: Has mvp?
+      default: true
+
+  - stringParameter:
+      id: presenterName
+      name: Presenter name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SamplePresenter
+      suggest: ${featureName}Presenter
+      visibility: ${isMvp}
+
+  - stringParameter:
+      id: viewName
+      name: View name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleView
+      suggest: ${featureName}View
+      visibility: ${isMvp}
+
+  - booleanParameter:
+      id: isHasComponent
+      name: Has component?
+      help: Has component?
+      default: true
+
+  - stringParameter:
+      id: componentName
+      name: Component name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleComponent
+      suggest: ${featureName}Component
+      visibility: ${isHasComponent}
+
+  - booleanParameter:
+      id: isCreateList
+      name: Create list?
+      help: Create list?
+      default: true
+
+  - stringParameter:
+      id: listItemName
+      name: List item name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleItem
+      suggest: ${featureName}Item
+      visibility: ${isCreateList}
+
+# Fragment
+  - booleanParameter:
+      id: isViewTypeFragment
+      name: Create Fragment?
+      help: Remove other 'create' marks if you don't need them
+      default: true
+
+  - stringParameter:
+      id: fragmentName
+      name: Fragment name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleFragment
+      suggest: ${featureName}Fragment
+      visibility: ${isViewTypeFragment}
+
+  - stringParameter:
+      id: fragmentLayoutName
+      name: Fragment layout name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: fragment_sample
+
+      suggest: fragment_${featureName.camelCaseToUnderlines()}
+      visibility: ${isViewTypeFragment}
+
+# Fragment Dialog
+  - booleanParameter:
+      id: isViewTypeFragmentDialog
+      name: Or create a fragment dialog?
+      help: Remove other 'create' marks if you don't need them
+      default: false
+
+  - booleanParameter:
+      id: isViewTypeFullscreenFragmentDialog
+      name: FullscreenFragmentDialog?
+      help: Check it if the fragment dialog should be FullscreenFragmentDialog
+      default: false
+      visibility: ${isViewTypeFragmentDialog}
+
+  - stringParameter:
+      id: fragmentDialogName
+      name: Fragment dialog name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleFragmentDialog
+      suggest: ${featureName}Dialog
+      visibility: ${isViewTypeFragmentDialog}
+
+  - stringParameter:
+      id: fragmentDialogLayoutName
+      name: Fragment dialog layout name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: dialog_sample
+      suggest: dialog_${featureName.camelCaseToUnderlines()}
+      visibility: ${isViewTypeFragmentDialog}
+
+# Activity
+  - booleanParameter:
+      id: isViewTypeActivity
+      name: Or create an Activity?
+      help: Remove other 'create' marks if you don't need them
+      default: false
+
+  - stringParameter:
+      id: activityName
+      name: Activity name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: SampleActivity
+      suggest: ${featureName}Activity
+      visibility: ${isViewTypeActivity}
+
+  - stringParameter:
+      id: activityLayoutName
+      name: Activity layout name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: activity_sample
+      suggest: activity_${featureName.camelCaseToUnderlines()}
+      visibility: ${isViewTypeActivity}
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+recipe:
+  - predicate:
+      validIf: ${isViewTypeActivity}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/view/feature_package/ui/activity/Activity.kt.ftl
+            to: ${srcOut}/view/${feature_name}/ui/activity/${activityName}.kt
+
+        - instantiateAndOpen:
+            from: root/res/layout/layout.xml.ftl
+            to: ${resOut}/layout/${activityLayoutName}.xml
+
+  - predicate:
+      validIf: ${isViewTypeFragment}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/view/feature_package/ui/fragment/Fragment.kt.ftl
+            to: ${srcOut}/view/${feature_name}/ui/fragment/${fragmentName}.kt
+
+        - instantiateAndOpen:
+            from: root/res/layout/layout.xml.ftl
+            to: ${resOut}/layout/${fragmentLayoutName}.xml
+
+  - predicate:
+      validIf: ${isViewTypeFragmentDialog}
+      commands:
+        - predicate:
+            validIf: ${isViewTypeFullscreenFragmentDialog}
+            commands:
+              - instantiateAndOpen:
+                  from: root/src/app_package/view/feature_package/ui/dialog/FullscreenDialogFragment.kt.ftl
+                  to: ${srcOut}/view/${feature_name}/ui/dialog/${fragmentDialogName}.kt
+            elseCommands:
+              - instantiateAndOpen:
+                  from: root/src/app_package/view/feature_package/ui/dialog/DialogFragment.kt.ftl
+                  to: ${srcOut}/view/${feature_name}/ui/dialog/${fragmentDialogName}.kt
+
+        - instantiateAndOpen:
+            from: root/res/layout/layout.xml.ftl
+            to: ${resOut}/layout/${fragmentDialogLayoutName}.xml

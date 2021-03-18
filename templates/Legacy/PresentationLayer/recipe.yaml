@@ -1,0 +1,134 @@
+requiredParams:
+  name: Presentation
+  description: Creates presentation layer for specified feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - stringParameter:
+      id: itemName
+      name: Item name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: suggest
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Id type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - stringParameter:
+      id: presenterName
+      name: Presenter name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Presenter
+
+  - stringParameter:
+      id: viewName
+      name: View name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}View
+
+  - stringParameter:
+      id: interactorName
+      name: Interactor name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Interactor
+
+  - booleanParameter:
+      id: isCreateStateMapper
+      name: Create state mapper?
+      help: Create state mapper?
+      default: true
+
+  - stringParameter:
+      id: stateMapperName
+      name: State mapper name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}StateMapper
+      visibility: ${isCreateStateMapper}
+
+  - booleanParameter:
+      id: isCreateListItem
+      name: Create list item?
+      help: Create list item?
+      default: true
+
+  - stringParameter:
+      id: listItemName
+      name: List item name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Item
+      visibility: ${isCreateListItem}
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+recipe:
+  - instantiateAndOpen:
+      from: root/src/app_package/presentation/feature_package/Presenter.kt.ftl
+      to: ${srcOut}/presentation/${feature_name}/${presenterName}.kt
+
+  - instantiateAndOpen:
+      from: root/src/app_package/presentation/feature_package/View.kt.ftl
+      to: ${srcOut}/presentation/${feature_name}/${viewName}.kt
+
+  - predicate:
+      validIf: ${isCreateListItem}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/presentation/feature_package/model/Item.kt.ftl
+            to: ${srcOut}/presentation/${feature_name}/model/${listItemName}.kt
+
+  - predicate:
+      validIf: ${isCreateStateMapper}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/presentation/feature_package/mapper/StateMapper.kt.ftl
+            to: ${srcOut}/presentation/${feature_name}/mapper/${stateMapperName}.kt

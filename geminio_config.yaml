@@ -1,0 +1,15 @@
+# Specify path to your template groups directory here.
+# Template groups directory is a directory where all template groups are located; currently
+# only two groups at max are supported, and their names should be specified explicitly
+# in this file below (see `groupsNames`).
+#
+# You can specify relative path (relative from geminio_cofig.yaml location)
+# by starting path with "./" or ".\".
+# Any path not started with "./" or ".\" will be considered as absolute path.
+templateGroupsPath: ./templates
+
+# Only two groups at max currently supported, their names should be specified here
+# (there is no limit to the number of templates =inside= of each group)
+groupsNames:
+  group1: Legacy
+  group2: Redux

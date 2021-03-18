@@ -1,0 +1,151 @@
+requiredParams:
+  name: Cache Layer
+  description: Cache layer for feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - stringParameter:
+      id: itemName
+      name: Item name (if not equal to feature name)
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: suggest
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Id type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - booleanParameter:
+      id: isSingleItemOperation
+      name: Only single item operations supported?
+      help: Only single item operations supported?
+      default: false
+
+  - booleanParameter:
+      id: isCreateDataSource
+      name: Create cache data source impl?
+      help: Create cache data source impl?
+      default: true
+
+  - stringParameter:
+      id: dataSourceName
+      name: Cache data source interface name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}CacheDataSource
+      visibility: ${isCreateDataSource}
+
+  - booleanParameter:
+      id: isCreateDao
+      name: Create dao interface?
+      help: Create dao interface?
+      default: true
+
+  - stringParameter:
+      id: daoName
+      name: Dao name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Dao
+      visibility: ${isCreateDao}
+
+  - booleanParameter:
+      id: isCreateEntity
+      name: Create entity?
+      help: Create entity?
+      default: false
+
+  - stringParameter:
+      id: entityName
+      name: Entity name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${itemName}Entity
+      visibility: ${isCreateEntity}
+
+  - booleanParameter:
+      id: isCreateEntityMapper
+      name: Create entity mapper?
+      help: Create entity mapper?
+      visibility: ${isCreateEntity}
+      default: false
+
+  - stringParameter:
+      id: entityMapperName
+      name: Entity mapper name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${entityName}Mapper
+      visibility: ${isCreateEntityMapper}
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+recipe:
+  - predicate:
+      validIf: ${isCreateDataSource}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/cache/feature_package/CacheDataSourceImpl.kt.ftl
+            to: ${srcOut}/cache/${feature_name}/${dataSourceName}Impl.kt
+
+  - predicate:
+      validIf: ${isCreateDao}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/cache/feature_package/dao/Dao.kt.ftl
+            to: ${srcOut}/cache/${feature_name}/dao/${daoName}.kt
+
+  - predicate:
+      validIf: ${isCreateEntity}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/cache/feature_package/model/Entity.kt.ftl
+            to: ${srcOut}/cache/${feature_name}/model/${entityName}.kt
+
+  - predicate:
+      validIf: ${isCreateEntityMapper}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/cache/feature_package/mapper/EntityMapper.kt.ftl
+            to: ${srcOut}/cache/${feature_name}/mapper/${entityMapperName}.kt

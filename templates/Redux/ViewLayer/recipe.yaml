@@ -1,0 +1,131 @@
+requiredParams:
+  name: View Layer
+  description: View layer for feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - stringParameter:
+      id: itemName
+      name: Item name (if not equal to feature name)
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: suggest
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Id type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - booleanParameter:
+      id: isHasComponent
+      name: Has component?
+      help: Has component?
+      default: true
+
+  - stringParameter:
+      id: componentName
+      name: Component name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Component
+      visibility: ${isHasComponent}
+
+  - booleanParameter:
+      id: isCreateList
+      name: Create list?
+      help: Create list?
+      default: true
+
+  - stringParameter:
+      id: listItemName
+      name: List item name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Item
+      visibility: ${isCreateList}
+
+# Fragment
+  - booleanParameter:
+      id: isViewTypeFragment
+      name: Create Fragment?
+      help: Create Fragment?
+      default: true
+
+  - stringParameter:
+      id: fragmentName
+      name: Fragment name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Fragment
+      visibility: ${isViewTypeFragment}
+
+  - stringParameter:
+      id: fragmentLayoutName
+      name: Fragment layout name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: fragment_sample
+
+      suggest: fragment_${featureName.camelCaseToUnderlines()}
+      visibility: ${isViewTypeFragment}
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+  - stringParameter:
+      id: viewModel
+      value: ${featureName}ViewModel
+
+recipe:
+  - instantiateAndOpen:
+      from: root/src/app_package/view/feature_package/viewmodel/ViewModel.kt.ftl
+      to: ${srcOut}/view/${feature_name}/viewmodel/${viewModel}.kt
+
+  - predicate:
+      validIf: ${isViewTypeFragment}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/view/feature_package/ui/fragment/Fragment.kt.ftl
+            to: ${srcOut}/view/${feature_name}/ui/fragment/${fragmentName}.kt
+
+        - instantiateAndOpen:
+            from: root/res/layout/layout.xml.ftl
+            to: ${resOut}/layout/${fragmentLayoutName}.xml

@@ -1,0 +1,113 @@
+requiredParams:
+  name: Presentation
+  description: Creates presentation layer for specified feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - booleanParameter:
+      id: useRx
+      name: Rx
+      help: Use RxActionDispatcher instead of CoroutineActionDispatcher
+      default: false
+
+  - stringParameter:
+      id: itemName
+      name: Item name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}
+
+  - stringParameter:
+      id: itemPackage
+      name: Package of item
+      constraints:
+        - package
+      default: suggest
+      suggest: ${packageName}.domain.${featureName.camelCaseToUnderlines()}.model
+
+  - stringParameter:
+      id: idType
+      name: Type of item
+      constraints:
+        - class
+        - nonempty
+      default: Long
+
+  - booleanParameter:
+      id: isCreateListItem
+      name: Create list item?
+      help: Create list item?
+      default: true
+
+  - stringParameter:
+      id: listItemName
+      name: List item name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Item
+      visibility: ${isCreateListItem}
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+  - stringParameter:
+      id: featureReducerName
+      value: ${featureName}Reducer
+
+  - stringParameter:
+      id: actionDispatcherName
+      value: ${featureName}ActionDispatcher
+
+  - stringParameter:
+      id: viewName
+      value: ${featureName}View
+
+  - stringParameter:
+      id: interactorName
+      value: ${featureName}Interactor
+
+recipe:
+  - instantiateAndOpen:
+        from: root/src/app_package/presentation/feature_package/Feature.kt.ftl
+        to: ${srcOut}/presentation/${feature_name}/${featureName}.kt
+
+  - instantiateAndOpen:
+      from: root/src/app_package/presentation/feature_package/FeatureReducer.kt.ftl
+      to: ${srcOut}/presentation/${feature_name}/${featureReducerName}.kt
+
+  - predicate:
+      validIf: ${useRx}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/presentation/feature_package/RxActionDispatcher.kt.ftl
+            to: ${srcOut}/presentation/${feature_name}/${actionDispatcherName}.kt
+      elseCommands:
+        - instantiateAndOpen:
+            from: root/src/app_package/presentation/feature_package/ActionDispatcher.kt.ftl
+            to: ${srcOut}/presentation/${feature_name}/${actionDispatcherName}.kt
+
+  - predicate:
+      validIf: ${isCreateListItem}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/presentation/feature_package/model/Item.kt.ftl
+            to: ${srcOut}/presentation/${feature_name}/model/${listItemName}.kt

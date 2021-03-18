@@ -1,0 +1,187 @@
+requiredParams:
+  name: Injection Layer
+  description: Injection layer for feature
+
+widgets:
+  - stringParameter:
+      id: packageName
+      name: Root package
+      constraints:
+        - package
+      default: com.workingeeks.
+
+  - stringParameter:
+      id: featureName
+      name: Feature name
+      default: SampleFeature
+
+  - booleanParameter:
+      id: isCreateComponent
+      name: Create component?
+      help: Create component?
+      default: false
+
+  - stringParameter:
+      id: componentName
+      name: Component name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Component
+      visibility: ${isCreateComponent}
+
+  - booleanParameter:
+      id: isCreateModule
+      name: Create module?
+      help: Create module?
+      default: false
+
+  - stringParameter:
+      id: moduleName
+      name: Module name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Module
+      visibility: ${isCreateModule}
+
+  - booleanParameter:
+      id: isCreateDataModule
+      name: Create data module?
+      help: Create data module?
+      default: false
+
+  - stringParameter:
+      id: dataModuleName
+      name: Data module name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}DataModule
+      visibility: ${isCreateDataModule}
+
+  - stringParameter:
+      id: repositoryName
+      name: Repository interface name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Repository
+      visibility: ${isCreateDataModule}
+
+  - booleanParameter:
+      id: hasCacheDataSource
+      name: Has cache layer?
+      help: Has cache layer?
+      default: false
+
+  - stringParameter:
+      id: cacheDataSourceName
+      name: CacheDataSource name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}CacheDataSource
+      visibility: ${hasCacheDataSource}
+
+  - booleanParameter:
+      id: hasDao
+      name: Has Dao?
+      help: Has Dao?
+      visibility: ${hasCacheDataSource}
+      default: false
+
+  - stringParameter:
+      id: daoName
+      name: Dao name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Dao
+      visibility: ${hasDao}
+
+  - booleanParameter:
+      id: hasRemoteDataSource
+      name: Has remote layer?
+      help: Has remote layer?
+      default: false
+
+  - stringParameter:
+      id: remoteDataSourceName
+      name: RemoteDataSource name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}RemoteDataSource
+      visibility: ${hasRemoteDataSource}
+
+  - booleanParameter:
+      id: hasService
+      name: Has Retrofit Service?
+      help: Has Retrofit Service?
+      visibility: ${hasRemoteDataSource}
+      default: false
+
+  - stringParameter:
+      id: serviceName
+      name: Service name
+      constraints:
+        - class
+        - nonempty
+        - unique
+      default: suggest
+      suggest: ${featureName}Service
+      visibility: ${hasService}
+
+globals:
+  - stringParameter:
+      id: feature_name
+      value: ${featureName.camelCaseToUnderlines()}
+
+  - stringParameter:
+      id: featureReducerName
+      value: ${featureName}Reducer
+
+  - stringParameter:
+      id: actionDispatcherName
+      value: ${featureName}ActionDispatcher
+
+  - stringParameter:
+      id: viewModelName
+      value: ${featureName}ViewModel
+
+recipe:
+  - predicate:
+      validIf: ${isCreateComponent}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/view/injection/feature_package/Component.kt.ftl
+            to: ${srcOut}/view/injection/${feature_name}/${componentName}.kt
+
+  - predicate:
+      validIf: ${isCreateModule}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/view/injection/feature_package/Module.kt.ftl
+            to: ${srcOut}/view/injection/${feature_name}/${moduleName}.kt
+
+  - predicate:
+      validIf: ${isCreateDataModule}
+      commands:
+        - instantiateAndOpen:
+            from: root/src/app_package/view/injection/feature_package/DataModule.kt.ftl
+            to: ${srcOut}/view/injection/${feature_name}/${dataModuleName}.kt
