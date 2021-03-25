@@ -8,8 +8,10 @@
 # Any path not started with "./" or ".\" will be considered as absolute path.
 templateGroupsPath: ./templates
 
+# Common global values are hardcoded. See "expressions" section in docs (/docs/ru/EXPRESSIONS.md)
+
 # Only two groups at max currently supported, their names should be specified here
 # (there is no limit to the number of templates =inside= of each group)
 groupsNames:
-  group1: Legacy
-  group2: Redux
+  group1: Redux
+  group2: Legacy
